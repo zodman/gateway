@@ -4,6 +4,6 @@ Dependencies (Debian):
 
   # pip install tornado
 
-  $ cd gateway/txrad/
+  $ cd daemon/txrad/
   $ make
 
