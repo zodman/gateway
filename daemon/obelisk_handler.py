@@ -130,11 +130,12 @@ class ObFetchHistory(ObeliskCallbackBase):
         method(address, self, from_height)
 
     def translate_arguments(self, params):
-        if len(params) != 1 and len(params) != 2:
-            raise ValueError("Invalid parameter list length")
-        address = params[0]
-        if len(params) == 2:
-            from_height = params[1]
+        if len(params) != 1 and len(params) != 2 and len(params) !=3:
+            raise ValueError("Invalid parameter list length %s" % len(params))
+        address_version = params[0]
+        address = params[1]
+        if len(params) == 3:
+            from_height = params[2]
         else:
             from_height = 0
         return (address, from_height)

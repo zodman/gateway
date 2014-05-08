@@ -14,6 +14,8 @@ class BaseHTTPHandler(tornado.web.RequestHandler):
         self.finish(json.dumps(response))
 
 
+
+
 class BlockHeaderHandler(tornado.web.RequestHandler):
     @asynchronous
     def get(self, blk_hash=None):
@@ -108,7 +110,7 @@ class AddressHistoryHandler(tornado.web.RequestHandler):
             "params": [address_version, address_hash, from_height]
         }
 
-        self.application._obelisk_handler.handle_request(self, request)
+        self.application.obelisk_handler.handle_request(self, request)
 
 
 class BaseHTTPHandler(tornado.web.RequestHandler):
