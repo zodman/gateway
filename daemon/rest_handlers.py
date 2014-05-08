@@ -118,7 +118,7 @@ class AddressHistoryHandler(BaseHTTPHandler):
             "params": [address, from_height]
         }
         logging.info("handle to obelisk")
-        self.application.obelisk_handler.handle_request(self, request)
+        self.application.client
 
 
 

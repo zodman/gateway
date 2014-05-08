@@ -40,6 +40,7 @@ class GatewayApplication(tornado.web.Application):
         settings = dict(debug=True)
         settings.update(options.as_dict())
         client = obelisk.ObeliskOfLightClient(service)
+        self.client = client
         self.obelisk_handler = obelisk_handler.ObeliskHandler(client)
         self.brc_handler = broadcast.BroadcastHandler()
         self.p2p = CryptoTransportLayer(config.get('p2p-port', 8889), config.get('external-ip', '127.0.0.1'))
