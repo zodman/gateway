@@ -2,6 +2,7 @@ import tornado
 import logging
 import threading
 from collections import defaultdict
+import json
 
 
 class QuerySocketHandler(tornado.websocket.WebSocketHandler):
@@ -43,6 +44,7 @@ class QuerySocketHandler(tornado.websocket.WebSocketHandler):
             request = json.loads(message)
         except:
             logging.error("Error decoding message: %s", message, exc_info=True)
+            return 
 
         # Check request is correctly formed.
         if not self._check_request(request):
@@ -70,6 +72,7 @@ class QuerySocketHandler(tornado.websocket.WebSocketHandler):
                response, exc_info=True)
 
     def queue_response(self, response):
+        ioloop = tornado.ioloop.IOLoop.current()
         try:
             # calling write_message or the socket is not thread safe
             ioloop.add_callback(self._send_response, response)

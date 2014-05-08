@@ -23,7 +23,6 @@ parse_command_line()
 
 import rest_handlers
 import obelisk_handler
-import querysocket_handler
 import jsonchan
 import broadcast
 import ticker
@@ -32,6 +31,7 @@ define("port", default=8888, help="run on the given port", type=int)
 
 global ioloop
 ioloop = tornado.ioloop.IOLoop.instance()
+import querysocket_handler
 
 class GatewayApplication(tornado.web.Application):
 
