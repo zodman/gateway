@@ -11,6 +11,11 @@ The darkwallet gateway is a daemon providing the following services to wallets:
 Generally the gateway tries to provide all services a wallet may need acting as a proxy to mask the user address so as to not compromise it in many services.
 
 
+Install:
+-------------
+
+see INSTALL file
+
 Running:
 -----------
 
