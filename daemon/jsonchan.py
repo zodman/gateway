@@ -149,6 +149,7 @@ class ObJsonChanPost(JsonChanHandlerBase):
     def process(self, params):
         self._json_chan.post(params[0], params[1], params[2])
         self.process_response(None, {'result': 'ok', 'method': 'post'})
+        self._gateway.send_p2p(params);
 
 class ObJsonChanList(JsonChanHandlerBase):
     def process(self, params):
@@ -168,12 +169,12 @@ class ObJsonChanSubscribe(JsonChanHandlerBase):
         # store in handler memory to be able to unsubscribe
         if not params[1] in self._handler._subscriptions['channel']:
             self._handler._subscriptions['channel'][params[1]] = []
-        self._handler._subscriptions['channel'][params[1]].append(self.send_notification)
+        self._handler._subscriptions['channel'][params[1]].append([params[0], self.send_notification])
         self.process_response(None, {'result': 'ok', 'method': 'subscribe', 'thread': params[1]})
 
     def send_notification(self, data):
         data['type'] = 'chan_update'
-        if not self._handler.ws_connection:
+        if not self._handler.ws_connection or not self._handler._connected:
             raise ClientGone()
             #section = self._json_chan.get_section(self._params[0])
             #section.unsubscribe(self._params[1], self.send_notification)
@@ -185,13 +186,29 @@ class ObJsonChanUnsubscribe(JsonChanHandlerBase):
         section = self._json_chan.get_section(params[0])
         thread_id = params[1]
         if thread_id in self._handler._subscriptions['channel']:
-            for cb in self._handler._subscriptions['channel'][thread_id]:
-                section.unsubscribe(thread_id, cb)
-            self._handler._subscriptions['channel'].pop(thread_id)
+            i = 0
+            to_remove = []
+            for section_name, cb in self._handler._subscriptions['channel'][thread_id]:
+                if section_name == params[0]:
+                    section.unsubscribe(thread_id, cb)
+                    to_remove.append(i)
+                i += 1
+            toremove.reverse()
+            for idx in toremove:
+                self._handler._subscriptions['channel'][thread_id].pop(idx) 
             self.process_response(None, {'result': 'ok', 'method': 'unsubscribe', 'thread': params[1]})
         else:
             self.process_response(None, {'result': 'error', 'error': 'Thread does not exist', 'thread': params[1]})
  
+class ObDisconnectClient(JsonChanHandlerBase):
+    def process(self, params):
+        for thread_id in self._handler._subscriptions['channel']:
+            for section_name, cb in self._handler._subscriptions['channel'][thread_id]:
+                section = self._json_chan.get_section(section_name)
+                section.unsubscribe(thread_id, cb)
+ 
+        self._handler._subscriptions['channel'] = {}
+
 
 class JsonChanHandler:
 
@@ -200,11 +217,24 @@ class JsonChanHandler:
         "chan_list":                ObJsonChanList,
         "chan_get":                 ObJsonChanGet,
         "chan_subscribe":           ObJsonChanSubscribe,
-        "chan_unsubscribe":         ObJsonChanUnsubscribe
+        "chan_unsubscribe":         ObJsonChanUnsubscribe,
+        "disconnect_client":        ObDisconnectClient
     }
 
-    def __init__(self):
+    def __init__(self, p2p):
         self._json_chan = JsonChan()
+        self._p2p = p2p
+        p2p.add_callback('jsonchan', self.on_p2p_message)
+
+    def send_p2p(self, params):
+        msg = {'type': 'jsonchan', 'action': 'post', 'data': params}
+        self._p2p.send(msg, secure=True)
+
+    def on_p2p_message(self, data):
+        if data.get('action') == 'post' and data.get('data'):
+            params = data.get('data')
+            if len(params) == 3:
+                self._json_chan.post(params[0], params[1], params[2])
 
     def handle_request(self, socket_handler, request):
         command = request["command"]

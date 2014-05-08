@@ -11,11 +11,14 @@ import threading
 import code
 from collections import defaultdict
 
+import config
+
 # Install Tornado reactor loop into Twister
 # http://www.tornadoweb.org/en/stable/twisted.html
 from tornado.platform.twisted import TwistedIOLoop
 from twisted.internet import reactor
 TwistedIOLoop().install()
+from crypto2crypto import CryptoTransportLayer
 
 from tornado.options import define, options, parse_command_line
 
@@ -42,7 +45,9 @@ class GatewayApplication(tornado.web.Application):
         client = obelisk.ObeliskOfLightClient(service)
         self.obelisk_handler = obelisk_handler.ObeliskHandler(client)
         self.brc_handler = broadcast.BroadcastHandler()
-        self.json_chan_handler = jsonchan.JsonChanHandler()
+        self.p2p = CryptoTransportLayer(config.get('p2p-port', 8889), config.get('external-ip', '127.0.0.1'))
+        self.p2p.join_network(config.get('seeds', []))
+        self.json_chan_handler = jsonchan.JsonChanHandler(self.p2p)
         self.ticker_handler = ticker.TickerHandler()
 
         handlers = [
@@ -97,6 +102,7 @@ class QuerySocketHandler(tornado.websocket.WebSocketHandler):
         disconnect_msg = {'command': 'disconnect_client', 'id': 0, 'params': []}
         self._connected = False
         self._obelisk_handler.handle_request(self, disconnect_msg)
+        self._json_chan_handler.handle_request(self, disconnect_msg)
         with QuerySocketHandler.listen_lock:
             self.listeners.remove(self)
 
@@ -131,6 +137,7 @@ class QuerySocketHandler(tornado.websocket.WebSocketHandler):
         try:
             self.write_message(json.dumps(response))
         except tornado.websocket.WebSocketClosedError:
+            self._connected = False
             logging.warning("Dropping response to closed socket: %s",
                response, exc_info=True)
 
@@ -157,11 +164,11 @@ class DebugConsole(threading.Thread):
 def main(service):
     application = GatewayApplication(service)
     tornado.autoreload.start(ioloop)
-    application.listen(8888)
-    debug_console = DebugConsole(application)
+    application.listen(config.get('websocket-port', 8888))
+    #debug_console = DebugConsole(application)
     reactor.run()
 
 if __name__ == "__main__":
-    service = "tcp://127.0.0.1:9091"
+    service = config.get("obelisk-url", "tcp://127.0.0.1:9091")
     main(service)
 
