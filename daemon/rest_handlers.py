@@ -95,7 +95,7 @@ class AddressHistoryHandler(tornado.web.RequestHandler):
 
         try:
             from_height = long(self.get_argument("from_height", 0))
-        except:
+        except ValueError:
             raise HTTPError(400)
 
         address_decoded = base58.b58decode(address)
