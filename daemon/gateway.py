@@ -18,7 +18,7 @@ import config
 from tornado.platform.twisted import TwistedIOLoop
 from twisted.internet import reactor
 TwistedIOLoop().install()
-from crypto2crypto import CryptoTransportLayer
+from lib.crypto2crypto import CryptoTransportLayer
 
 from tornado.options import define, options, parse_command_line
 
