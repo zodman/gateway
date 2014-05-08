@@ -1,5 +1,6 @@
 from twisted.internet import reactor
 
+import base58 
 import logging
 import obelisk
 
@@ -127,17 +128,18 @@ class ObFetchHistory(ObeliskCallbackBase):
     def call_method(self, method, params):
         assert len(params) == 2
         address, from_height = params
+        logging.info("call method %s %s", method, params)
         method(address, self, from_height)
 
     def translate_arguments(self, params):
-        if len(params) != 1 and len(params) != 2 and len(params) !=3:
+        if len(params) != 1 and len(params) != 2:
             raise ValueError("Invalid parameter list length %s" % len(params))
-        address_version = params[0]
-        address = params[1]
-        if len(params) == 3:
-            from_height = params[2]
+        address = params[0]
+        if len(params) == 2:
+            from_height = params[1]
         else:
             from_height = 0
+        logging.info("address: %s %s", address, from_height)
         return (address, from_height)
 
     def translate_response(self, result):

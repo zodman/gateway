@@ -1,8 +1,7 @@
 import tornado.web
 import json
-import base58
 import random
-
+import logging
 from tornado.web import asynchronous, HTTPError
 
 def random_id_number():
@@ -10,9 +9,22 @@ def random_id_number():
 
 # Implements the on_fetch method for all HTTP requests.
 class BaseHTTPHandler(tornado.web.RequestHandler):
-    def on_fetch(self, response):
-        self.finish(json.dumps(response))
 
+    def _send_response(self, response):
+        try:
+            self.write(json.dumps(response))
+        except tornado.websocket.WebSocketClosedError:
+            self._connected = False
+            logging.warning("Dropping response to closed socket: %s",
+               response, exc_info=True)
+
+    def queue_response(self, response):
+        ioloop = tornado.ioloop.IOLoop.current()
+        try:
+            # calling write_message or the socket is not thread safe
+            ioloop.add_callback(self._send_response, response)
+        except:
+            logging.error("Error adding callback", exc_info=True)
 
 
 
@@ -89,7 +101,7 @@ class TransactionHandler(tornado.web.RequestHandler):
 
         self.application._obelisk_handler.handle_request(self, request)
 
-class AddressHistoryHandler(tornado.web.RequestHandler):
+class AddressHistoryHandler(BaseHTTPHandler):
     @asynchronous
     def get(self, address=None):
         if address is None:
@@ -100,17 +112,15 @@ class AddressHistoryHandler(tornado.web.RequestHandler):
         except ValueError:
             raise HTTPError(400)
 
-        address_decoded = base58.b58decode(address)
-        address_version = address_decoded[0]
-        address_hash = address_decoded[1:21]
-
         request = {
             "id": random_id_number(),
             "command":"fetch_history",
-            "params": [address_version, address_hash, from_height]
+            "params": [address, from_height]
         }
-
+        logging.info("handle to obelisk")
         self.application.obelisk_handler.handle_request(self, request)
+
+
 
 
 class BaseHTTPHandler(tornado.web.RequestHandler):
