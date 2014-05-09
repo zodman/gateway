@@ -274,6 +274,7 @@ class ObeliskHandler:
         params = request["params"]
         # Create callback handler to write response to the socket.
         handler = self.handlers[command](socket_handler, request["id"], self._client)
+        logging.info("params %s", params)
         try:
             params = handler.translate_arguments(params)
         except Exception as exc:
