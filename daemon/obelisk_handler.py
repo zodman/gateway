@@ -23,7 +23,6 @@ class ObeliskCallbackBase(object):
         self._handler.queue_response(response)
 
     def call_method(self, method, params):
-        logging.info("method %s params %s", method, params)
         method(*params, cb=self)
 
     def call_client_method(self, method_name, params):
