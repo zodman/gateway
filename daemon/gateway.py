@@ -50,26 +50,26 @@ class GatewayApplication(tornado.web.Application):
         #websocket uri space
         handlers = [
             # /block/<block hash>
-            (r"/block/([^/]*)(?:/)?", rest_handlers.BlockHeaderHandler),
+          #  (r"/block/([^/]*)(?:/)?", rest_handlers.BlockHeaderHandler),
 
-            # /block/<block hash>/transactions
-            (r"/block/([^/]*)/transactions(?:/)?",
-                rest_handlers.BlockTransactionsHandler),
+            ## /block/<block hash>/transactions
+            #(r"/block/([^/]*)/transactions(?:/)?",
+                #rest_handlers.BlockTransactionsHandler),
 
-            # /tx/
-            (r"/tx(?:/)?", rest_handlers.TransactionPoolHandler),
+            ## /tx/
+            #(r"/tx(?:/)?", rest_handlers.TransactionPoolHandler),
 
-            # /tx/<txid>
-            (r"/tx/([^/]*)(?:/)?", rest_handlers.TransactionHandler),
+            ## /tx/<txid>
+            #(r"/tx/([^/]*)(?:/)?", rest_handlers.TransactionHandler),
 
             # /address/<address>
             (r"/address/([^/]*)(?:/)?", rest_handlers.AddressHistoryHandler),
 
             # /height
-            (r"/height(?:/)?", rest_handlers.HeightHandler),
+           # (r"/height(?:/)?", rest_handlers.HeightHandler),
 
-            # /
-            (r"/", querysocket_handler.QuerySocketHandler)
+            ## /
+            #(r"/", querysocket_handler.QuerySocketHandler)
         ]
 
         # helloobelisk uri space

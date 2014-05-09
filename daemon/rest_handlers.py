@@ -107,19 +107,14 @@ class AddressHistoryHandler(BaseHTTPHandler):
         if address is None:
             raise HTTPError(400, reason="No address")
 
-        try:
-            from_height = long(self.get_argument("from_height", 0))
-        except ValueError:
-            raise HTTPError(400)
-
-        request = {
-            "id": random_id_number(),
-            "command":"fetch_history",
-            "params": [address, from_height]
-        }
         logging.info("handle to obelisk")
-        self.application.client
+        self.application.client.fetch_history(address, self._end)
 
+    def _end(self,ec,history):
+        logging.info("fetch_history %s %s", ec,history )
+        res  =  ec, history
+        self.write(json.dumps(res))
+        self.finish()
 
 
 
