@@ -2,7 +2,7 @@ import tornado.web
 import json
 import base58
 import random
-
+import logging
 from tornado.web import asynchronous, HTTPError
 
 def random_id_number():
@@ -12,6 +12,7 @@ def random_id_number():
 class BaseHTTPHandler(tornado.web.RequestHandler):
 
     def queue_response(self, response):
+        logging.info("response %s", response)
         self.finish(json.dumps(response))
 
 class BlockHeaderHandler(tornado.web.RequestHandler):
@@ -97,7 +98,6 @@ class AddressHistoryHandler(BaseHTTPHandler):
             from_height = long(self.get_argument("from_height", 0))
         except ValueError:
             raise HTTPError(400, reason="Invalid height")
-
 
         request = {
             "id": random_id_number(),
