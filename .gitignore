@@ -3,3 +3,4 @@
 *.so
 config.json
 tags
+.*.sw*

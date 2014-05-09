@@ -10,9 +10,9 @@ def random_id_number():
 
 # Implements the on_fetch method for all HTTP requests.
 class BaseHTTPHandler(tornado.web.RequestHandler):
-    def on_fetch(self, response):
-        self.finish(json.dumps(response))
 
+    def queue_response(self, response):
+        self.finish(json.dumps(response))
 
 class BlockHeaderHandler(tornado.web.RequestHandler):
     @asynchronous
@@ -87,7 +87,7 @@ class TransactionHandler(tornado.web.RequestHandler):
 
         self.application._obelisk_handler.handle_request(self, request)
 
-class AddressHistoryHandler(tornado.web.RequestHandler):
+class AddressHistoryHandler(BaseHTTPHandler):
     @asynchronous
     def get(self, address=None):
         if address is None:
@@ -95,26 +95,17 @@ class AddressHistoryHandler(tornado.web.RequestHandler):
 
         try:
             from_height = long(self.get_argument("from_height", 0))
-        except:
-            raise HTTPError(400)
+        except ValueError:
+            raise HTTPError(400, reason="Invalid height")
 
-        address_decoded = base58.b58decode(address)
-        address_version = address_decoded[0]
-        address_hash = address_decoded[1:21]
 
         request = {
             "id": random_id_number(),
             "command":"fetch_history",
-            "params": [address_version, address_hash, from_height]
+            "params": [address, from_height]
         }
 
-        self.application._obelisk_handler.handle_request(self, request)
-
-
-class BaseHTTPHandler(tornado.web.RequestHandler):
-    def on_fetch(self, response):
-        self.finish(response)
-
+        self.application.obelisk_handler.handle_request(self, request)
 
 class HeightHandler(BaseHTTPHandler):
     @asynchronous
@@ -122,8 +113,8 @@ class HeightHandler(BaseHTTPHandler):
         request = {
             "id": random_id_number(),
             "command":"fetch_last_height",
-            "params": None
+            "params": []
         }
 
-        self.application._obelisk_handler.handle_request(self, request)
+        self.application.obelisk_handler.handle_request(self, request)
 
