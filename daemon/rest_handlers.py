@@ -15,16 +15,16 @@ class BaseHTTPHandler(tornado.web.RequestHandler):
         logging.info("response %s", response)
         self.finish(json.dumps(response))
 
-class BlockHeaderHandler(tornado.web.RequestHandler):
+class BlockHeaderHandler(BaseHTTPHandler):
     @asynchronous
     def get(self, blk_hash=None):
         if blk_hash is None:
             raise HTTPError(400, reason="No block hash")
 
-        try:
-            blk_hash = blk_hash.decode("hex")
-        except ValueError:
-            raise HTTPError(400, reason="Invalid hash")
+#        try:
+            #blk_hash = blk_hash.decode("hex")
+        #except ValueError:
+            #raise HTTPError(400, reason="Invalid hash")
 
         request = {
             "id": random_id_number(),
@@ -32,7 +32,7 @@ class BlockHeaderHandler(tornado.web.RequestHandler):
             "params": [blk_hash]
         }
 
-        self.application._obelisk_handler.handle_request(self, request)
+        self.application.obelisk_handler.handle_request(self, request)
 
 
 class BlockTransactionsHandler(tornado.web.RequestHandler):
@@ -52,7 +52,7 @@ class BlockTransactionsHandler(tornado.web.RequestHandler):
             "params": [blk_hash]
         }
 
-        self.application._obelisk_handler.handle_request(self, request)
+        self.application.obelisk_handler.handle_request(self, request)
 
 class TransactionPoolHandler(tornado.web.RequestHandler):
     @asynchronous
@@ -86,7 +86,7 @@ class TransactionHandler(tornado.web.RequestHandler):
             "params": [tx_hash]
         }
 
-        self.application._obelisk_handler.handle_request(self, request)
+        self.application.obelisk_handler.handle_request(self, request)
 
 class AddressHistoryHandler(BaseHTTPHandler):
     @asynchronous
