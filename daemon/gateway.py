@@ -63,13 +63,13 @@ class GatewayApplication(tornado.web.Application):
             #(r"/tx/([^/]*)(?:/)?", rest_handlers.TransactionHandler),
 
             # /address/<address>
-            (r"/address/([^/]*)(?:/)?", rest_handlers.AddressHistoryHandler),
+            #(r"/address/([^/]*)(?:/)?", rest_handlers.AddressHistoryHandler),
 
             # /height
            # (r"/height(?:/)?", rest_handlers.HeightHandler),
 
-            ## /
-            #(r"/", querysocket_handler.QuerySocketHandler)
+            ## WebSocket Handler
+            (r"/", querysocket_handler.QuerySocketHandler)
         ]
 
         # helloobelisk uri space
