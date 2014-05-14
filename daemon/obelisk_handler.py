@@ -155,7 +155,8 @@ class ObFetchBlockHeader(ObeliskCallbackBase):
 
     def translate_arguments(self, params):
         check_params_length(params, 1)
-        index = unpack_index(params[0])
+        #index = unpack_index(params[0])
+        index = params[0]
         return (index,)
 
     def translate_response(self, result):

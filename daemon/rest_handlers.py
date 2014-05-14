@@ -29,7 +29,7 @@ class BlockHeaderHandler(BaseHTTPHandler):
         if blk_hex is None:
             raise HTTPError(400, reason="No block hash")
         blk_hash = blk_hex.decode("hex")
-        request = self._get_request([blk_hash])
+        request = self._get_request([blk_hash,])
         self.application.obelisk_handler.handle_request(self, request)
 
 
