@@ -3,6 +3,8 @@ import json
 import random
 import logging
 from tornado.web import asynchronous, HTTPError
+import obelisk
+from obelisk import bitcoin
 
 def random_id_number():
     return random.randint(0, 2**32 - 1)
@@ -114,29 +116,41 @@ class AddressHistoryHandler(BaseHTTPHandler):
             raise HTTPError(400, reason="No address")
 
         logging.info("handle to obelisk")
-        self.application.client.fetch_history(address, self._end)
+        self.address = address
+        self.application.client.fetch_history(address, self._callback_response)
 
-    def _end(self,ec,history):
+    def _callback_response(self,ec,history):
         logging.info("fetch_history %s %s", ec,history )
-        res  =  ec, history
-        self.write(json.dumps(res))
-        self.finish()
+        address = {}
+        total_balance = 0
+        total_balance += sum(row[3] for row in history
+                                                 if row[-1] != obelisk.MAX_UINT32)
+        _,hash160 = bitcoin.bc_address_to_hash_160(self.address)
+        logging.info(" hash160 %s", hash160)
+        address.update({'total_balance': total_balance, 
+               # 'hash160':hash160.decode("hex"), # bitcoin.bc_address_to_hash_160(self.address),
+                'address':self.address})
+        data = {'address': address}
+        if not ec:
+            response = self.success_response(data)
+        else:
+            response = self.error_response(history)
+        self.send_response(response)
+
 
 class HeightHandler(BaseHTTPHandler):
 
     @asynchronous
     def get(self):
-        self.application.client.fetch_last_height(self._callback_response)
+        self.application.client.fetch_last_height(self._before_callback_response)
 
-    def _callback_response(self, *args,**kwargs):
-        have_errors, data_response = args
+    def _before_callback_response(self, ec, height):
+        self.height = height
+        self.application.client.fetch_block_header(height, self._callback_response)
 
-        data = { 'height': data_response }
-        if not have_errors:
-            response_dict = self.success_response(data)
-        else:
-            response_dict = self.error_response(data)
-
+    def _callback_response(self, ec, header):
+        data = { 'last_height': self.height, 'last_header_block': header.encode("hex") }
+        response_dict = self.success_response(data)
         self.send_response(response_dict)
 
 
