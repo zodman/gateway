@@ -90,9 +90,13 @@ class TransactionHandler(BaseHTTPHandler):
         self.application.client.fetch_transaction( tx_hash, self._callback_response)
 
     def _callback_response(self, ec, tx):
-        transaction = tx.encode("hex")
+        transaction =  tx.encode("hex")
+        tx_ = obelisk.bitcoin.Transaction(transaction)
         data = {
-            'transaction': transaction
+            'transaction':{
+                'transaction_hash': transaction,
+                'transaction_deserealize': tx_.deserialize(),
+                }
         }
         response = self.success_response(data)
         self.send_response(response)
