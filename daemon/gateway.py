@@ -49,25 +49,6 @@ class GatewayApplication(tornado.web.Application):
         self.ticker_handler = ticker.TickerHandler()
         #websocket uri space
         handlers = [
-            # /block/<block hash>
-          #  (r"/block/([^/]*)(?:/)?", rest_handlers.BlockHeaderHandler),
-
-            ## /block/<block hash>/transactions
-            #(r"/block/([^/]*)/transactions(?:/)?",
-                #rest_handlers.BlockTransactionsHandler),
-
-            ## /tx/
-            #(r"/tx(?:/)?", rest_handlers.TransactionPoolHandler),
-
-            ## /tx/<txid>
-            #(r"/tx/([^/]*)(?:/)?", rest_handlers.TransactionHandler),
-
-            # /address/<address>
-            #(r"/address/([^/]*)(?:/)?", rest_handlers.AddressHistoryHandler),
-
-            # /height
-           # (r"/height(?:/)?", rest_handlers.HeightHandler),
-
             ## WebSocket Handler
             (r"/", querysocket_handler.QuerySocketHandler)
         ]
@@ -79,6 +60,7 @@ class GatewayApplication(tornado.web.Application):
             (uri_space + r'address/([^/]*)(?:/)?', rest_handlers.AddressHistoryHandler),
             (uri_space + r'tx/([^/]*)(?:/)?', rest_handlers.TransactionHandler),
             (uri_space + r'block/([^/]*)(?:/)?', rest_handlers.BlockHeaderHandler),
+            (uri_space + r"block/([^/]*)/transactions(?:/)?",  rest_handlers.BlockTransactionsHandler),
         ]
         all_handlers = other_handlers + handlers
         tornado.web.Application.__init__(self, all_handlers, **settings)

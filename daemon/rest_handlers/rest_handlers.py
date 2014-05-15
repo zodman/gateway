@@ -9,7 +9,6 @@ from obelisk import bitcoin
 def random_id_number():
     return random.randint(0, 2**32 - 1)
 
-# Implements the on_fetch method for all HTTP requests.
 class BaseHTTPHandler(tornado.web.RequestHandler):
     def send_response(self, response):
         self._response(response)
@@ -74,20 +73,21 @@ class BlockTransactionsHandler(tornado.web.RequestHandler):
     @asynchronous
     def get(self, blk_hash=None):
         if blk_hash is None:
-            raise HTTPError(400, reason="No block hash")
+           response = self.error_response("no block hash")
+           self.send_response(response)
 
         try:
             blk_hash = blk_hash.decode("hex")
         except ValueError:
-            raise HTTPError(400, reason="Invalid hash")
+            response = self.error_response("Invalid block")
+            self.send_response(response)
 
-        request = {
-            "id": random_id_number(),
-            "command":"fetch_block_transaction_hashes",
-            "params": [blk_hash]
-        }
+        self.application.client.fetch_block_transaction_hashes(blk_hash, self._callback_response)
 
-        self.application._obelisk_handler.handle_request(self, request)
+    def _callback_response(self, hash_list):
+        print hash_list
+        self.send_response("")
+
 
 
 
