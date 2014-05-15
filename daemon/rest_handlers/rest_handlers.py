@@ -125,11 +125,13 @@ class AddressHistoryHandler(BaseHTTPHandler):
         total_balance = 0
         total_balance += sum(row[3] for row in history
                                                  if row[-1] != obelisk.MAX_UINT32)
-        _,hash160 = bitcoin.bc_address_to_hash_160(self.address)
-        logging.info(" hash160 %s", hash160)
+        transactions = []
+        for row in history:
+            o_hash, o_index, o_height, value, s_hash, s_index, s_height = row
+            transaction = {}
+
         address.update({'total_balance': total_balance, 
-               # 'hash160':hash160.decode("hex"), # bitcoin.bc_address_to_hash_160(self.address),
-                'address':self.address})
+                'address':self.address, 'transactions': transactions})
         data = {'address': address}
         if not ec:
             response = self.success_response(data)
