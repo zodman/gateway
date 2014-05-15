@@ -128,7 +128,18 @@ class AddressHistoryHandler(BaseHTTPHandler):
         transactions = []
         for row in history:
             o_hash, o_index, o_height, value, s_hash, s_index, s_height = row
-            transaction = {}
+            def check_none( hash_):
+                if hash_ is None:
+                    return  None
+                else:
+                    return hash_.encode("hex")
+
+            transaction = {
+                    'output_hash': check_none(o_hash),'output_index': o_index,'output_height':o_height,
+                    'value': value,
+                    'spend_hash':check_none(s_hash), 'spend_index': s_index, 'spend_height': s_height,
+                }
+            transactions.append(transaction)
 
         address.update({'total_balance': total_balance, 
                 'address':self.address, 'transactions': transactions})
