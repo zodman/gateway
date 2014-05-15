@@ -9,7 +9,12 @@ def random_id_number():
 
 # Implements the on_fetch method for all HTTP requests.
 class BaseHTTPHandler(tornado.web.RequestHandler):
+    def send_response(self, response):
+        self._response(response)
 
+    def _response(self, response):
+        self.write(json.dumps(response))
+        self.finish()
 
     def success_response(self, data):
         return {
@@ -17,13 +22,17 @@ class BaseHTTPHandler(tornado.web.RequestHandler):
             'data': data
             }
 
-    def _callback_response(self, *args,**kwargs):
-        success, data_response = args
-        data = { 'height': data_response }
-        if not success:
-            response_dict = self.success_response(data)
-        self.write(json.dumps(response_dict))
-        self.finish()
+    def fail_response(self, data):
+        return {
+            'status':'fail',
+            'data': data
+        }
+
+    def error_response(self, data):
+        return {
+            'status':'error',
+            'data':data
+        }
 
 class BlockHeaderHandler(tornado.web.RequestHandler):
     @asynchronous
@@ -118,4 +127,16 @@ class HeightHandler(BaseHTTPHandler):
     @asynchronous
     def get(self):
         self.application.client.fetch_last_height(self._callback_response)
+
+    def _callback_response(self, *args,**kwargs):
+        have_errors, data_response = args
+
+        data = { 'height': data_response }
+        if not have_errors:
+            response_dict = self.success_response(data)
+        else:
+            response_dict = self.error_response(data)
+
+        self.send_response(response_dict)
+
 
