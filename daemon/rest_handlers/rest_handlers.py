@@ -75,39 +75,27 @@ class BlockTransactionsHandler(tornado.web.RequestHandler):
 
         self.application._obelisk_handler.handle_request(self, request)
 
-class TransactionPoolHandler(tornado.web.RequestHandler):
-    @asynchronous
-    # Dump transaction pool to user
-    def get(self):
-        raise NotImplementedError
-
-    def on_fetch(self, ec, pool):
-        raise NotImplementedError
-
-    # Send tx if it is valid,
-    # validate if ?validate is in url...
-    def post(self):
-        raise NotImplementedError
 
 
-class TransactionHandler(tornado.web.RequestHandler):
+class TransactionHandler(BaseHTTPHandler):
     @asynchronous
     def get(self, tx_hash=None):
         if tx_hash is None:
-            raise HTTPError(400, reason="No block hash")
-
+            self.fail_response("missing tx_hash")
         try:
             tx_hash = tx_hash.decode("hex")
         except ValueError:
-            raise HTTPError(400, reason="Invalid hash")
+            self.fail_response("invalid tx_hash")
+        logging.info("transaction %s", tx_hash)
+        self.application.client.fetch_transaction( tx_hash, self._callback_response)
 
-        request = {
-            "id": random_id_number(),
-            "command":"fetch_transaction",
-            "params": [tx_hash]
+    def _callback_response(self, ec, tx):
+        transaction = tx.encode("hex")
+        data = {
+            'transaction': transaction
         }
-
-        self.application._obelisk_handler.handle_request(self, request)
+        response = self.success_response(data)
+        self.send_response(response)
 
 class AddressHistoryHandler(BaseHTTPHandler):
     @asynchronous
@@ -159,8 +147,19 @@ class HeightHandler(BaseHTTPHandler):
         self.height = height
         self.application.client.fetch_block_header(height, self._callback_response)
 
-    def _callback_response(self, ec, header):
-        data = { 'last_height': self.height, 'last_header_block': header.encode("hex") }
+    def _callback_response(self, ec, header_bin):
+        header = obelisk.serialize.deser_block_header(header_bin)
+        data = { 'last_height': self.height, 
+                 'last_header_block': {
+                    'hash': header_bin.encode("hex"),
+                    'version': header.version,
+                    'previous_block_hash': header.previous_block_hash.encode("hex"),
+                    'merkle': header.merkle.encode("hex"),
+                    'timestamp': header.timestamp,
+                    'bits': header.bits,
+                    'nonce':header.nonce,
+                } 
+        }
         response_dict = self.success_response(data)
         self.send_response(response_dict)
 

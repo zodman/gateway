@@ -75,8 +75,9 @@ class GatewayApplication(tornado.web.Application):
         # helloobelisk uri space
         uri_space= r"/rest/v1/"
         other_handlers = [
-            (uri_space + r"height(?:/)?", rest_handlers.HeightHandler),
+            (uri_space + r'height(?:/)?', rest_handlers.HeightHandler),
             (uri_space + r'address/([^/]*)(?:/)?', rest_handlers.AddressHistoryHandler),
+            (uri_space + r'tx/([^/]*)(?:/)?', rest_handlers.TransactionHandler),
         ]
         all_handlers = other_handlers + handlers
         tornado.web.Application.__init__(self, all_handlers, **settings)
