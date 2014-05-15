@@ -14,7 +14,7 @@ import config
 from tornado.platform.twisted import TwistedIOLoop
 from twisted.internet import reactor
 TwistedIOLoop().install()
-from lib.crypto2crypto import CryptoTransportLayer
+from crypto2crypto import CryptoTransportLayer
 
 from tornado.options import define, options, parse_command_line
 
@@ -75,7 +75,8 @@ class GatewayApplication(tornado.web.Application):
         # helloobelisk uri space
         uri_space= r"/rest/v1/"
         other_handlers = [
-            (uri_space + 'addresses/([^/]*)(?:/)?', rest_handlers.AddressHistoryHandler),
+            (uri_space + r'addresses/([^/]*)(?:/)?', rest_handlers.AddressHistoryHandler),
+            (uri_space + r"height(?:/)?", rest_handlers.HeightHandler),
         ]
         all_handlers = other_handlers + handlers
         tornado.web.Application.__init__(self, all_handlers, **settings)
