@@ -95,7 +95,7 @@ class TransactionHandler(BaseHTTPHandler):
         data = {
             'transaction':{
                 'transaction_hash': transaction,
-                'transaction_deserealize': tx_.deserialize(),
+                'transaction_deserialize': tx_.deserialize(),
                 }
         }
         response = self.success_response(data)
