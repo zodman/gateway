@@ -36,24 +36,38 @@ class BaseHTTPHandler(tornado.web.RequestHandler):
             'data':data
         }
 
-class BlockHeaderHandler(tornado.web.RequestHandler):
+class BlockHeaderHandler(BaseHTTPHandler):
     @asynchronous
     def get(self, blk_hash=None):
         if blk_hash is None:
-            raise HTTPError(400, reason="No block hash")
+           response = self.error_response("no block hash")
+           self.send_response(response)
 
         try:
             blk_hash = blk_hash.decode("hex")
         except ValueError:
-            raise HTTPError(400, reason="Invalid hash")
+            response = self.error_response("Invalid block")
+            self.send_response(response)
 
-        request = {
-            "id": random_id_number(),
-            "command":"fetch_block_header",
-            "params": [blk_hash]
+        self.application.client.fetch_block_header(blk_hash, self._callback_response)
+
+
+    def _callback_response(self, ec, header_bin):
+        header = obelisk.serialize.deser_block_header(header_bin)
+        data = {  
+                 'header_block': {
+                    'hash': header_bin.encode("hex"),
+                    'version': header.version,
+                    'previous_block_hash': header.previous_block_hash.encode("hex"),
+                    'merkle': header.merkle.encode("hex"),
+                    'timestamp': header.timestamp,
+                    'bits': header.bits,
+                    'nonce':header.nonce,
+                } 
         }
+        response_dict = self.success_response(data)
+        self.send_response(response_dict)
 
-        self.application._obelisk_handler.handle_request(self, request)
 
 
 class BlockTransactionsHandler(tornado.web.RequestHandler):
@@ -81,11 +95,13 @@ class TransactionHandler(BaseHTTPHandler):
     @asynchronous
     def get(self, tx_hash=None):
         if tx_hash is None:
-            self.fail_response("missing tx_hash")
+            response  = self.fail_response("missing tx_hash")
+            self.send_response(response)
         try:
             tx_hash = tx_hash.decode("hex")
         except ValueError:
-            self.fail_response("invalid tx_hash")
+            response = self.fail_response("invalid tx_hash")
+            self.send_response(response)
         logging.info("transaction %s", tx_hash)
         self.application.client.fetch_transaction( tx_hash, self._callback_response)
 
@@ -141,7 +157,7 @@ class AddressHistoryHandler(BaseHTTPHandler):
         self.send_response(response)
 
 
-class HeightHandler(BaseHTTPHandler):
+class HeightHandler(BlockHeaderHandler, BaseHTTPHandler):
 
     @asynchronous
     def get(self):

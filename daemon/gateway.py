@@ -78,6 +78,7 @@ class GatewayApplication(tornado.web.Application):
             (uri_space + r'height(?:/)?', rest_handlers.HeightHandler),
             (uri_space + r'address/([^/]*)(?:/)?', rest_handlers.AddressHistoryHandler),
             (uri_space + r'tx/([^/]*)(?:/)?', rest_handlers.TransactionHandler),
+            (uri_space + r'block/([^/]*)(?:/)?', rest_handlers.BlockHeaderHandler),
         ]
         all_handlers = other_handlers + handlers
         tornado.web.Application.__init__(self, all_handlers, **settings)
