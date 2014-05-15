@@ -115,12 +115,10 @@ class AddressHistoryHandler(BaseHTTPHandler):
         if address is None:
             raise HTTPError(400, reason="No address")
 
-        logging.info("handle to obelisk")
         self.address = address
         self.application.client.fetch_history(address, self._callback_response)
 
     def _callback_response(self,ec,history):
-        logging.info("fetch_history %s %s", ec,history )
         address = {}
         total_balance = 0
         total_balance += sum(row[3] for row in history
