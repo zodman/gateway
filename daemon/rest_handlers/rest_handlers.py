@@ -94,8 +94,8 @@ class TransactionHandler(BaseHTTPHandler):
         tx_ = obelisk.bitcoin.Transaction(transaction)
         data = {
             'transaction':{
-                'transaction_hash': transaction,
-                'transaction_deserialize': tx_.deserialize(),
+                'hash': transaction,
+                'deserialize': tx_.deserialize(),
                 }
         }
         response = self.success_response(data)
