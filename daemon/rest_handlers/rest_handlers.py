@@ -53,15 +53,17 @@ class BlockHeaderHandler(BaseHTTPHandler):
 
     def _callback_response(self, ec, header_bin):
         header = obelisk.serialize.deser_block_header(header_bin)
-        data = {  
+        pbh = header.previous_block_hash.encode("hex")
+        data = { 
                  'header_block': {
+                    'hash': obelisk.serialize.hash_block_header(header).encode("hex"),
                     'version': header.version,
-                    'previous_block_hash': header.previous_block_hash.encode("hex"),
+                    'previous_block_hash': pbh.decode("hex")[::-1].encode("hex"),
                     'merkle': header.merkle.encode("hex"),
                     'timestamp': header.timestamp,
                     'bits': header.bits,
                     'nonce':header.nonce,
-                } 
+                }
         }
         response_dict = self.success_response(data)
         self.send_response(response_dict)
