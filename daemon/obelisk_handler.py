@@ -128,7 +128,6 @@ class ObFetchHistory(ObeliskCallbackBase):
     def call_method(self, method, params):
         assert len(params) == 2
         address, from_height = params
-        logging.info("call method %s %s", method, params)
         method(address, self, from_height)
 
     def translate_arguments(self, params):
@@ -139,7 +138,6 @@ class ObFetchHistory(ObeliskCallbackBase):
             from_height = params[1]
         else:
             from_height = 0
-        logging.info("address: %s %s", address, from_height)
         return (address, from_height)
 
     def translate_response(self, result):

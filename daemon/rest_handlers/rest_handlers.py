@@ -55,7 +55,6 @@ class BlockHeaderHandler(BaseHTTPHandler):
         header = obelisk.serialize.deser_block_header(header_bin)
         data = {  
                  'header_block': {
-                    'hash': header_bin.encode("hex"),
                     'version': header.version,
                     'previous_block_hash': header.previous_block_hash.encode("hex"),
                     'merkle': header.merkle.encode("hex"),
@@ -66,8 +65,6 @@ class BlockHeaderHandler(BaseHTTPHandler):
         }
         response_dict = self.success_response(data)
         self.send_response(response_dict)
-
-
 
 class BlockTransactionsHandler(tornado.web.RequestHandler):
     @asynchronous
@@ -87,9 +84,6 @@ class BlockTransactionsHandler(tornado.web.RequestHandler):
     def _callback_response(self, hash_list):
         print hash_list
         self.send_response("")
-
-
-
 
 class TransactionHandler(BaseHTTPHandler):
     @asynchronous
@@ -156,9 +150,7 @@ class AddressHistoryHandler(BaseHTTPHandler):
             response = self.error_response(history)
         self.send_response(response)
 
-
 class HeightHandler(BlockHeaderHandler, BaseHTTPHandler):
-
     @asynchronous
     def get(self):
         self.application.client.fetch_last_height(self._before_callback_response)
@@ -169,11 +161,12 @@ class HeightHandler(BlockHeaderHandler, BaseHTTPHandler):
 
     def _callback_response(self, ec, header_bin):
         header = obelisk.serialize.deser_block_header(header_bin)
+        pbh = header.previous_block_hash.encode("hex")
         data = { 'last_height': self.height, 
                  'last_header_block': {
-                    'hash': header_bin.encode("hex"),
+                    'hash': obelisk.serialize.hash_block_header(header).encode("hex"),
                     'version': header.version,
-                    'previous_block_hash': header.previous_block_hash.encode("hex"),
+                    'previous_block_hash': pbh.decode("hex")[::-1].encode("hex"),
                     'merkle': header.merkle.encode("hex"),
                     'timestamp': header.timestamp,
                     'bits': header.bits,
@@ -182,5 +175,3 @@ class HeightHandler(BlockHeaderHandler, BaseHTTPHandler):
         }
         response_dict = self.success_response(data)
         self.send_response(response_dict)
-
-
