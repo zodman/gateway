@@ -68,7 +68,7 @@ class BlockHeaderHandler(BaseHTTPHandler):
         response_dict = self.success_response(data)
         self.send_response(response_dict)
 
-class BlockTransactionsHandler(tornado.web.RequestHandler):
+class BlockTransactionsHandler(BaseHTTPHandler):
     @asynchronous
     def get(self, blk_hash=None):
         if blk_hash is None:
@@ -83,9 +83,13 @@ class BlockTransactionsHandler(tornado.web.RequestHandler):
 
         self.application.client.fetch_block_transaction_hashes(blk_hash, self._callback_response)
 
-    def _callback_response(self, hash_list):
-        print hash_list
-        self.send_response("")
+    def _callback_response(self, ec, list_hash):
+        trans = []
+        for row  in list_hash:
+            tx_hex = row.encode("hex")
+            tx = obelisk.serialize.deser_tx(tx_hex)
+            trans.append(tx.deserialize())
+        self.send_response(trans)
 
 class TransactionHandler(BaseHTTPHandler):
     @asynchronous
