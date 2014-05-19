@@ -87,8 +87,7 @@ class BlockTransactionsHandler(BaseHTTPHandler):
         trans = []
         for row  in list_hash:
             tx_hex = row.encode("hex")
-            tx = obelisk.serialize.deser_tx(tx_hex)
-            trans.append(tx.deserialize())
+            trans.append(tx_hex)
         self.send_response(trans)
 
 class TransactionHandler(BaseHTTPHandler):
