@@ -181,3 +181,17 @@ class HeightHandler(BlockHeaderHandler, BaseHTTPHandler):
         }
         response_dict = self.success_response(data)
         self.send_response(response_dict)
+
+
+class NetHandler( BaseHTTPHandler):
+    def get(self):
+        chain = obelisk.config.chain
+        if chain.magic_bytes == 0x00:
+            net = "main"
+        else:
+            net = "testnet"
+        response = {
+            'chain': net,
+        }
+
+        self.send_response(response)
