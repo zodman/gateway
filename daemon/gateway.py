@@ -66,6 +66,7 @@ class GatewayApplication(tornado.web.Application):
         from rest_handlers import get_urls
 
         all_handlers = other_handlers + handlers + get_urls(uri_space)
+
         tornado.web.Application.__init__(self, all_handlers, **settings)
 
 
