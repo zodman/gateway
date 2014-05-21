@@ -63,7 +63,9 @@ class GatewayApplication(tornado.web.Application):
             (uri_space + r'block/([^/]*)(?:/)?', rest_handlers.BlockHeaderHandler),
             (uri_space + r"block/([^/]*)/transactions(?:/)?",  rest_handlers.BlockTransactionsHandler),
         ]
-        all_handlers = other_handlers + handlers
+        from rest_handlers import get_urls
+
+        all_handlers = other_handlers + handlers + get_urls(uri_space)
         tornado.web.Application.__init__(self, all_handlers, **settings)
 
 
